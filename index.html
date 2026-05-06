@@ -15,8 +15,8 @@
   --accent-hover: #ff6e87;
   --green: #4ade80;
   --red: #c0392b;
+  --blue: #3498db;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -26,97 +26,53 @@ body {
   display: flex;
   flex-direction: column;
 }
-
-/* 顶栏 */
 #top {
-  background: var(--bg-deep);
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  gap: 5px 10px;
-  border-bottom: 2px solid var(--border-color);
-  flex-shrink: 0;
-  flex-wrap: wrap;
+  background: var(--bg-deep); padding: 10px 20px; display: flex; align-items: center;
+  gap: 5px 10px; border-bottom: 2px solid var(--border-color); flex-shrink: 0; flex-wrap: wrap;
 }
 #top h2 { flex: 1; font-size: 14px; color: var(--accent); min-width: 150px; }
 .top-btn {
-  padding: 7px 14px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: bold;
+  padding: 7px 14px; border: none; border-radius: 5px; cursor: pointer;
+  font-size: 13px; font-weight: bold;
 }
 #loadLabel { background: var(--border-color); color: var(--text-main); }
 #loadLabel:hover { background: #1a4a8a; }
 #exportBtn { background: var(--accent); color: #fff; }
 #exportBtn:disabled { background: #444; color: var(--text-light); cursor: not-allowed; }
-#fileInput { display: none; }
+#fileInput, #importInput { display: none; }
 #loadedFile { font-size: 12px; color: var(--text-light); }
-
-/* 主体 */
 #body { display: flex; flex: 1; overflow: hidden; position: relative; }
-
-/* 左：标签 */
 #tabs {
-  width: 110px;
-  background: var(--bg-deep);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
+  width: 110px; background: var(--bg-deep); border-right: 1px solid var(--border-color);
+  display: flex; flex-direction: column; flex-shrink: 0;
 }
 .tab {
-  padding: 14px 8px;
-  text-align: center;
-  font-size: 12px;
-  cursor: pointer;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-light);
-  line-height: 1.5;
+  padding: 14px 8px; text-align: center; font-size: 12px; cursor: pointer;
+  border-bottom: 1px solid var(--border-color); color: var(--text-light); line-height: 1.5;
 }
 .tab:hover { background: #1a2a4a; color: var(--text-main); }
 .tab.on { background: var(--border-color); color: var(--accent); font-weight: bold; border-left: 3px solid var(--accent); }
-
-/* 中：列表 */
 #listWrap {
-  width: 260px;
-  background: var(--bg-main);
-  border-right: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
+  width: 260px; background: var(--bg-main); border-right: 1px solid var(--border-color);
+  display: flex; flex-direction: column; flex-shrink: 0;
 }
 #listTop {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-shrink: 0;
+  padding: 8px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
 }
-#listTop span { font-size: 12px; color: var(--text-light); }
-#addBtn {
-  background: var(--border-color);
-  color: var(--text-main);
-  border: none;
-  padding: 4px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
+#listTop span { font-size: 12px; color: var(--text-light); width: 100%; }
+.list-btn {
+  background: var(--border-color); color: var(--text-main); border: none; padding: 4px 10px;
+  border-radius: 4px; cursor: pointer; font-size: 12px;
 }
-#addBtn:hover { background: #1a4a8a; }
+.list-btn:hover { background: #1a4a8a; }
+#batchActions { display: none; gap: 6px; flex-wrap: wrap; }
+#listWrap.batch-mode #listTopRegular { display: none; }
+#listWrap.batch-mode #batchActions { display: flex; }
 #list { flex: 1; overflow-y: auto; padding: 6px; }
 .item {
-  padding: 8px 10px;
-  margin-bottom: 4px;
-  border-radius: 5px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--bg-deep);
+  padding: 8px 10px; margin-bottom: 4px; border-radius: 5px; cursor: pointer;
+  border: 1px solid transparent; display: flex; align-items: center; gap: 8px; background: var(--bg-deep);
 }
 .item:hover { background: #1a2a4a; }
 .item.on { border-color: var(--accent); background: #1a2a4a; }
@@ -124,32 +80,20 @@ body {
 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .dot-on { background: var(--green); }
 .dot-off { background: #555; }
-
-/* 拖拽效果 */
+.item-checkbox { display: none; margin-right: 4px; cursor: default; }
+#listWrap.batch-mode .item-checkbox { display: inline-block; }
 .item.dragging { opacity: 0.5; }
 .item.drag-over { border-top: 2px solid var(--accent); }
-
-
-/* 右：编辑区 */
 #editor { flex: 1; overflow-y: auto; padding: 0; background: var(--bg-main); }
 #hint { padding: 60px 20px; text-align: center; color: #444; font-size: 14px; }
 #editBox { display: none; flex-direction: column; height: 100%; }
-
-/* 编辑器顶部工具栏 */
 #editTop {
-  background: var(--bg-deep);
-  border-bottom: 2px solid var(--accent);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
+  background: var(--bg-deep); border-bottom: 2px solid var(--accent); padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
 }
 #backBtn { display: none; background: var(--border-color); color: var(--text-main); border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
 #editTitle { flex: 1; font-size: 13px; font-weight: bold; color: var(--accent); }
 #delBtn { background: var(--red); color: #fff; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-
-/* 字段区域 */
 #fields { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
 .field-group { display: flex; flex-direction: column; gap: 5px; }
 .field-group > label { font-size: 11px; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
@@ -160,8 +104,6 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 textarea { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; resize: vertical; min-height: 180px; }
 textarea.big { min-height: 380px; }
 select option { background: var(--bg-deep); }
-
-/* 响应式布局 */
 @media (max-width: 800px) {
   #tabs { width: 85px; }
   .tab { padding: 12px 5px; font-size: 11px; }
@@ -195,267 +137,182 @@ select option { background: var(--bg-deep); }
   <div id="listWrap">
     <div id="listTop">
       <span id="listLabel">预设模块列表</span>
-      <button id="addBtn">＋ 新增</button>
+      <div id="listTopRegular" style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button id="addBtn" class="list-btn">＋ 新增</button>
+        <button id="batchBtn" class="list-btn">🔄 批量操作</button>
+        <!-- ★ 关键修复：加上 for="importInput" -->
+        <label id="importLabel" class="list-btn" for="importInput">📥 导入模块</label>
+        <input type="file" id="importInput" accept=".json">
+      </div>
+      <div id="batchActions">
+        <button id="selectAllBtn" class="list-btn">✅ 全选</button>
+        <button id="exportSelectedBtn" class="list-btn" style="background:var(--blue)">📂 导出选中</button>
+        <button id="doneBatchBtn" class="list-btn" style="background:var(--accent)">↩️ 完成</button>
+      </div>
     </div>
     <div id="list"></div>
   </div>
 
-  <div id="editor">
-    <div id="hint">← 请先加载 JSON，然后点击左侧列表中的任意条目进行编辑</div>
-    <div id="editBox">
-      <div id="editTop">
-        <button id="backBtn">← 返回</button>
-        <span id="editTitle">正在编辑：</span>
-        <button id="delBtn">🗑 删除此项</button>
-      </div>
-      <div id="fields">
-        <div id="promptFields" style="display:flex; flex-direction:column; gap:14px;">
-          <div class="field-row">
-            <div class="field-group"><label>模块名称 (Name)</label><input type="text" id="f-name"></div>
-            <div class="field-group" style="max-width:150px;"><label>启用状态</label><select id="f-enabled"><option value="true">✅ 启用</option><option value="false">❌ 禁用</option></select></div>
-          </div>
-          <div class="field-row">
-            <div class="field-group"><label>注入角色 (Role)</label><select id="f-role"><option value="system">System</option><option value="user">User</option><option value="assistant">Assistant</option></select></div>
-            <div class="field-group"><label>注入深度 (Depth)</label><input type="number" id="f-depth" min="0"></div>
-            <div class="field-group"><label>注入位置 (Position)</label><input type="number" id="f-pos" min="0"></div>
-          </div>
-          <div class="field-group"><label>📝 文本内容 (Content)</label><textarea id="f-content" class="big"></textarea></div>
-        </div>
-        <div id="regexFields" style="display:none; flex-direction:column; gap:14px;">
-          <div class="field-row">
-            <div class="field-group"><label>正则名称 (Script Name)</label><input type="text" id="r-name"></div>
-            <div class="field-group" style="max-width:150px;"><label>启用状态</label><select id="r-enabled"><option value="false">✅ 启用</option><option value="true">❌ 禁用</option></select></div>
-          </div>
-          <div class="field-group"><label>查找正则 (Find Regex)</label><input type="text" id="r-find"></div>
-          <div class="field-group"><label>📝 替换内容 (Replace String)</label><textarea id="r-replace" class="big"></textarea></div>
-          <div class="field-row">
-            <div class="field-group"><label>Placement (逗号分隔)</label><input type="text" id="r-placement"></div>
-            <div class="field-group"><label>Min Depth</label><input type="number" id="r-minDepth" placeholder="null"></div>
-            <div class="field-group"><label>Max Depth</label><input type="number" id="r-maxDepth" placeholder="null"></div>
-          </div>
-          <div class="field-row">
-            <div class="field-group"><label>Prompt Only</label><select id="r-promptOnly"><option value="false">False</option><option value="true">True</option></select></div>
-            <div class="field-group"><label>Markdown Only</label><select id="r-markdownOnly"><option value="false">False</option><option value="true">True</option></select></div>
-            <div class="field-group"><label>Run On Edit</label><select id="r-runOnEdit"><option value="true">True</option><option value="false">False</option></select></div>
-          </div>
-        </div>
-        <div id="settingsFields" style="display:none; flex-direction:column; gap:14px;">
-          <div class="field-row">
-            <div class="field-group"><label>Temperature</label><input type="number" id="s-temperature" step="0.1"></div>
-            <div class="field-group"><label>Top P</label><input type="number" id="s-top_p" step="0.1"></div>
-            <div class="field-group"><label>Top K</label><input type="number" id="s-top_k" step="1"></div>
-          </div>
-          <div class="field-row">
-            <div class="field-group"><label>Frequency Penalty</label><input type="number" id="s-frequency_penalty" step="0.1"></div>
-            <div class="field-group"><label>Presence Penalty</label><input type="number" id="s-presence_penalty" step="0.1"></div>
-            <div class="field-group"><label>Repetition Penalty</label><input type="number" id="s-repetition_penalty" step="0.1"></div>
-          </div>
-          <div class="field-group"><label>Impersonation Prompt</label><textarea id="s-impersonation_prompt"></textarea></div>
-          <div class="field-group"><label>Continue Nudge Prompt</label><textarea id="s-continue_nudge_prompt"></textarea></div>
-          <div class="field-group"><label>New Chat Prompt</label><textarea id="s-new_chat_prompt"></textarea></div>
-          <div class="field-group"><label>Group Nudge Prompt</label><textarea id="s-group_nudge_prompt"></textarea></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="editor"></div>
 </div>
 
 <script>
-var gData = null;
-var gTab  = 'prompts';
-var gIdx  = -1;
-var gFile = 'preset.json';
-var gDraggedIdx = null; // 用于存储被拖动项的索引
+var gData = null, gTab = 'prompts', gIdx = -1, gFile = 'preset.json';
+var gDraggedIdx = null, gBatchMode = false, gSelectedIndices = new Set();
 
-// --- 文件加载 ---
-el('fileInput').addEventListener('change', function() {
-  var file = this.files[0];
-  if (!file) return;
-  gFile = file.name;
-  el('loadedFile').textContent = file.name;
+function el(id) { return document.getElementById(id); }
+
+// 注入编辑器 HTML
+document.getElementById('editor').innerHTML = `
+<div id="hint">← 请先加载 JSON，然后点击左侧列表中的任意条目进行编辑</div>
+<div id="editBox">
+  <div id="editTop">
+    <button id="backBtn">← 返回</button>
+    <span id="editTitle">正在编辑：</span>
+    <button id="delBtn">🗑 删除此项</button>
+  </div>
+  <div id="fields">
+    <div id="promptFields" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="field-row">
+        <div class="field-group"><label>模块名称 (Name)</label><input type="text" id="f-name"></div>
+        <div class="field-group" style="max-width:150px;"><label>启用状态</label>
+          <select id="f-enabled"><option value="true">✅ 启用</option><option value="false">❌ 禁用</option></select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>注入角色 (Role)</label>
+          <select id="f-role"><option value="system">System</option><option value="user">User</option><option value="assistant">Assistant</option></select>
+        </div>
+        <div class="field-group"><label>注入深度 (Depth)</label><input type="number" id="f-depth" min="0"></div>
+        <div class="field-group"><label>注入位置 (Position)</label><input type="number" id="f-pos" min="0"></div>
+      </div>
+      <div class="field-group"><label>📝 文本内容 (Content)</label><textarea id="f-content" class="big"></textarea></div>
+    </div>
+    <div id="regexFields" style="display:none;flex-direction:column;gap:14px;">
+      <div class="field-row">
+        <div class="field-group"><label>正则名称 (Script Name)</label><input type="text" id="r-name"></div>
+        <div class="field-group" style="max-width:150px;"><label>启用状态</label>
+          <select id="r-enabled"><option value="false">✅ 启用</option><option value="true">❌ 禁用</option></select>
+        </div>
+      </div>
+      <div class="field-group"><label>查找正则 (Find Regex)</label><input type="text" id="r-find"></div>
+      <div class="field-group"><label>📝 替换内容 (Replace String)</label><textarea id="r-replace" class="big"></textarea></div>
+      <div class="field-row">
+        <div class="field-group"><label>Placement (逗号分隔)</label><input type="text" id="r-placement"></div>
+        <div class="field-group"><label>Min Depth</label><input type="number" id="r-minDepth" placeholder="null"></div>
+        <div class="field-group"><label>Max Depth</label><input type="number" id="r-maxDepth" placeholder="null"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Prompt Only</label>
+          <select id="r-promptOnly"><option value="false">False</option><option value="true">True</option></select>
+        </div>
+        <div class="field-group"><label>Markdown Only</label>
+          <select id="r-markdownOnly"><option value="false">False</option><option value="true">True</option></select>
+        </div>
+        <div class="field-group"><label>Run On Edit</label>
+          <select id="r-runOnEdit"><option value="true">True</option><option value="false">False</option></select>
+        </div>
+      </div>
+    </div>
+    <div id="settingsFields" style="display:none;flex-direction:column;gap:14px;">
+      <div class="field-row">
+        <div class="field-group"><label>Temperature</label><input type="number" id="s-temperature" step="0.1"></div>
+        <div class="field-group"><label>Top P</label><input type="number" id="s-top_p" step="0.1"></div>
+        <div class="field-group"><label>Top K</label><input type="number" id="s-top_k" step="1"></div>
+      </div>
+      <div class="field-row">
+        <div class="field-group"><label>Frequency Penalty</label><input type="number" id="s-frequency_penalty" step="0.1"></div>
+        <div class="field-group"><label>Presence Penalty</label><input type="number" id="s-presence_penalty" step="0.1"></div>
+        <div class="field-group"><label>Repetition Penalty</label><input type="number" id="s-repetition_penalty" step="0.1"></div>
+      </div>
+      <div class="field-group"><label>Impersonation Prompt</label><textarea id="s-impersonation_prompt"></textarea></div>
+      <div class="field-group"><label>Continue Nudge Prompt</label><textarea id="s-continue_nudge_prompt"></textarea></div>
+      <div class="field-group"><label>New Chat Prompt</label><textarea id="s-new_chat_prompt"></textarea></div>
+      <div class="field-group"><label>Group Nudge Prompt</label><textarea id="s-group_nudge_prompt"></textarea></div>
+    </div>
+  </div>
+</div>`;
+
+// 加载主文件
+function handleMainFileLoad() {
+  var file = this.files[0]; if (!file) return;
+  gFile = file.name; el('loadedFile').textContent = file.name;
   var reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = e => {
     try {
       gData = JSON.parse(e.target.result);
       if (!gData.prompts) gData.prompts = [];
       if (!gData.extensions) gData.extensions = {};
       if (!gData.extensions.regex_scripts) gData.extensions.regex_scripts = [];
       el('exportBtn').disabled = false;
-      gIdx = -1;
       activateTab('prompts');
     } catch(err) { alert('JSON 解析失败：' + err.message); }
   };
-  reader.readAsText(file);
-  this.value = '';
-});
-
-// --- 标签切换 ---
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', function() {
-    if (!gData && this.dataset.tab !== 'settings') {
-      alert('请先加载 JSON 文件！');
-      return;
-    }
-    activateTab(this.dataset.tab);
-  });
-});
-
-function activateTab(tab) {
-  gTab = tab;
-  gIdx = -1;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
-  document.body.classList.remove('show-editor');
-  var lw = el('listWrap');
-  if (tab === 'settings') {
-    lw.style.display = 'none';
-    showSettingsEditor();
-  } else {
-    lw.style.display = 'flex';
-    el('listLabel').textContent = tab === 'prompts' ? '预设模块列表' : '正则脚本列表';
-    buildList();
-    showHint();
-  }
+  reader.readAsText(file); this.value = '';
 }
 
-// --- 列表渲染与拖拽 ---
-function buildList() {
-  var box = el('list');
-  box.innerHTML = '';
+// 导入模块并合并进当前文件
+function handleImportFileLoad() {
+  const file = this.files[0]; if (!file) return;
+  if (!gData) { alert('请先加载一个主 JSON 文件！'); this.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('文件格式不正确，应为数组。');
+      const target = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
+      let count = 0;
+      // 倒序插入，保持原始顺序且放在列表最前面
+      [...imported].reverse().forEach(item => {
+        if (typeof item === 'object' && item !== null) {
+          if (gTab === 'prompts' && !item.identifier) item.identifier = uuid();
+          if (gTab === 'regex' && !item.id) item.id = uuid();
+          target.unshift(item);
+          count++;
+        }
+      });
+      if (count > 0) { alert('成功导入 ' + count + ' 个模块！'); buildList(); }
+      else alert('没有找到可导入的有效模块。');
+    } catch(err) { alert('导入失败：' + err.message); }
+  };
+  reader.readAsText(file); this.value = '';
+}
+
+// 导出
+function exportJSON(selectedOnly) {
   if (!gData) return;
-
-  var arr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
-  arr.forEach((itemData, idx) => {
-    var div  = document.createElement('div');
-    div.className = 'item' + (idx === gIdx ? ' on' : '');
-    div.draggable = true; // 允许拖动
-
-    var isOn = gTab === 'prompts' ? !!itemData.enabled : !itemData.disabled;
-    var nm   = (gTab === 'prompts' ? itemData.name : itemData.scriptName) || '(未命名)';
-
-    div.innerHTML = `<span class="dot ${isOn ? 'dot-on' : 'dot-off'}"></span><span class="item-name" title="${nm}">${nm}</span>`;
-    
-    // --- 事件监听 ---
-    div.addEventListener('click', () => selectItem(idx));
-    
-    // 拖拽开始
-    div.addEventListener('dragstart', (e) => {
-      gDraggedIdx = idx;
-      e.target.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-    });
-    
-    // 拖拽结束（无论成功与否）
-    div.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
-
-    // 拖过别的元素
-    div.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      div.classList.add('drag-over');
-    });
-
-    // 离开别的元素
-    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
-
-    // 在别的元素上松手
-    div.addEventListener('drop', (e) => {
-      e.preventDefault();
-      div.classList.remove('drag-over');
-      if (gDraggedIdx === null || gDraggedIdx === idx) return;
-
-      var currentArr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
-      var movedItem = currentArr.splice(gDraggedIdx, 1)[0];
-      currentArr.splice(idx, 0, movedItem);
-
-      // (可选但推荐) 如果是 prompt，同步更新 injection_order
-      if (gTab === 'prompts') {
-        currentArr.forEach((p, i) => { if(p.injection_order !== undefined) p.injection_order = i * 10; });
-      }
-
-      gIdx = idx; // 选中被移动到的新位置
-      gDraggedIdx = null;
-      buildList(); // 重新渲染整个列表
-    });
-
-    box.appendChild(div);
-  });
-}
-
-
-// --- 选中条目 → 填充表单 ---
-function selectItem(idx) {
-  gIdx = idx;
-  buildList();
-  document.body.classList.add('show-editor');
-  var item = (gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts)[gIdx];
-  el('hint').style.display = 'none';
-  el('editBox').style.display = 'flex';
-  el('promptFields').style.display = gTab === 'prompts' ? 'flex' : 'none';
-  el('regexFields').style.display = gTab === 'regex' ? 'flex' : 'none';
-  el('settingsFields').style.display = 'none';
-  var nm = (gTab === 'prompts' ? item.name : item.scriptName) || '(未命名)';
-  el('editTitle').textContent = '正在编辑：' + nm;
-  if (gTab === 'prompts') {
-    el('f-name').value = item.name || '';
-    el('f-enabled').value = item.enabled ? 'true' : 'false';
-    el('f-role').value = item.role || 'system';
-    el('f-depth').value = item.injection_depth != null ? item.injection_depth : 4;
-    el('f-pos').value = item.injection_position != null ? item.injection_position : 0;
-    el('f-content').value = item.content || '';
+  let data, name;
+  if (selectedOnly) {
+    if (gSelectedIndices.size === 0) { alert('请先勾选要导出的条目！'); return; }
+    const src = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
+    data = Array.from(gSelectedIndices).sort((a,b)=>a-b).map(i => src[i]);
+    name = 'ST_' + gTab + '_Export.json';
   } else {
-    el('r-name').value = item.scriptName || '';
-    el('r-enabled').value = item.disabled ? 'true' : 'false';
-    el('r-find').value = item.findRegex || '';
-    el('r-replace').value = item.replaceString || '';
-    el('r-placement').value = (item.placement || []).join(', ');
-    el('r-minDepth').value = item.minDepth != null ? item.minDepth : '';
-    el('r-maxDepth').value = item.maxDepth != null ? item.maxDepth : '';
-    el('r-promptOnly').value = item.promptOnly ? 'true' : 'false';
-    el('r-markdownOnly').value = item.markdownOnly ? 'true' : 'false';
-    el('r-runOnEdit').value = item.runOnEdit !== false ? 'true' : 'false';
+    data = gData;
+    name = gFile.replace(/\.json$/i, '_Modified.json');
   }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 4)], {type:'application/json'}));
+  a.download = name; a.click();
 }
 
-// --- 表单 → 数据 ---
-function wireEvents() {
-  function bind(id, evt, cb) { el(id).addEventListener(evt, function() { cb(this.value); }); }
-  function set(key, val) { if (gIdx < 0 || !gData) return; (gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts)[gIdx][key] = val; }
-  function refresh(name) { el('editTitle').textContent = '正在编辑：'+(name||'(未命名)'); buildList(); }
-  
-  bind('f-name', 'input', v => { set('name', v); refresh(v); });
-  bind('f-enabled', 'change', v => { set('enabled', v === 'true'); buildList(); });
-  bind('f-role', 'change', v => set('role', v));
-  bind('f-depth', 'input', v => set('injection_depth', parseInt(v) || 0));
-  bind('f-pos', 'input', v => set('injection_position', parseInt(v) || 0));
-  bind('f-content', 'input', v => set('content', v));
-  
-  bind('r-name', 'input', v => { set('scriptName', v); refresh(v); });
-  bind('r-enabled', 'change', v => { set('disabled', v === 'true'); buildList(); });
-  bind('r-find', 'input', v => set('findRegex', v));
-  bind('r-replace', 'input', v => set('replaceString', v));
-  bind('r-promptOnly', 'change', v => set('promptOnly', v === 'true'));
-  bind('r-markdownOnly', 'change', v => set('markdownOnly', v === 'true'));
-  bind('r-runOnEdit', 'change', v => set('runOnEdit', v === 'true'));
-  bind('r-placement', 'input', v => set('placement', v.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n))));
-  bind('r-minDepth', 'input', v => set('minDepth', v === '' ? null : parseInt(v)));
-  bind('r-maxDepth', 'input', v => set('maxDepth', v === '' ? null : parseInt(v)));
-
-  ['temperature','top_p','top_k','frequency_penalty','presence_penalty','repetition_penalty'].forEach(k => bind('s-' + k, 'input', v => { if (gData) gData[k] = parseFloat(v); }));
-  ['impersonation_prompt','continue_nudge_prompt','new_chat_prompt','group_nudge_prompt'].forEach(k => bind('s-' + k, 'input', v => { if (gData) gData[k] = v; }));
-  
-  el('delBtn').addEventListener('click', () => {
-    if (gIdx < 0 || !confirm('确定删除此项？')) return;
-    (gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts).splice(gIdx, 1);
-    gIdx = -1;
-    buildList();
-    showHint();
-  });
-  
-  el('backBtn').addEventListener('click', () => document.body.classList.remove('show-editor'));
-  el('exportBtn').addEventListener('click', exportJSON);
-  el('addBtn').addEventListener('click', addItem);
+// 切换 Tab
+function activateTab(tab) {
+  exitBatchMode();
+  gTab = tab; gIdx = -1;
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.tab === tab));
+  el('listWrap').style.display = tab === 'settings' ? 'none' : 'flex';
+  document.body.classList.remove('show-editor');
+  if (tab === 'settings') { showSettingsEditor(); }
+  else { el('listLabel').textContent = tab === 'prompts' ? '预设模块列表' : '正则脚本列表'; buildList(); showHint(); }
 }
 
-// --- Settings 编辑器 ---
+function showHint() {
+  document.body.classList.remove('show-editor');
+  el('editBox').style.display = 'none';
+  el('hint').style.display = 'block';
+}
+
 function showSettingsEditor() {
   document.body.classList.add('show-editor');
   el('hint').style.display = 'none';
@@ -465,49 +322,151 @@ function showSettingsEditor() {
   el('settingsFields').style.display = 'flex';
   el('editTitle').textContent = '基础生成参数';
   el('delBtn').style.display = 'none';
-
   if (!gData) return;
   ['temperature','top_p','top_k','frequency_penalty','presence_penalty','repetition_penalty'].forEach(k => { if(el('s-'+k)) el('s-'+k).value = gData[k] != null ? gData[k] : ''; });
   ['impersonation_prompt','continue_nudge_prompt','new_chat_prompt','group_nudge_prompt'].forEach(k => { if(el('s-'+k)) el('s-'+k).value = gData[k] || ''; });
 }
 
-function showHint() {
-  document.body.classList.remove('show-editor');
-  el('editBox').style.display = 'none';
-  el('hint').style.display = 'block';
-  el('delBtn').style.display = 'inline-block';
+// 渲染列表
+function buildList() {
+  const box = el('list'); box.innerHTML = ''; if (!gData) return;
+  const arr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
+  arr.forEach((itemData, idx) => {
+    const div = document.createElement('div');
+    div.className = 'item' + (idx === gIdx ? ' on' : '');
+    div.draggable = !gBatchMode;
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.className = 'item-checkbox'; cb.checked = gSelectedIndices.has(idx);
+    cb.onclick = e => e.stopPropagation();
+    cb.onchange = () => { gSelectedIndices.has(idx) ? gSelectedIndices.delete(idx) : gSelectedIndices.add(idx); };
+    div.appendChild(cb);
+
+    const isOn = gTab === 'prompts' ? !!itemData.enabled : !itemData.disabled;
+    const nm = (gTab === 'prompts' ? itemData.name : itemData.scriptName) || '(未命名)';
+    const dot = document.createElement('span'); dot.className = 'dot ' + (isOn ? 'dot-on' : 'dot-off');
+    const nameSpan = document.createElement('span'); nameSpan.className = 'item-name'; nameSpan.title = nm; nameSpan.textContent = nm;
+    div.appendChild(dot); div.appendChild(nameSpan);
+
+    div.onclick = () => {
+      if (gBatchMode) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
+      else selectItem(idx);
+    };
+    div.addEventListener('dragstart', e => { if(gBatchMode) return e.preventDefault(); gDraggedIdx=idx; div.classList.add('dragging'); });
+    div.addEventListener('dragend', () => div.classList.remove('dragging'));
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+    div.addEventListener('drop', e => {
+      e.preventDefault(); div.classList.remove('drag-over');
+      if (gDraggedIdx === null || gDraggedIdx === idx) return;
+      const a = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
+      a.splice(idx, 0, a.splice(gDraggedIdx, 1)[0]);
+      gIdx = idx; gDraggedIdx = null; buildList();
+    });
+    box.appendChild(div);
+  });
 }
 
-// --- 新增 / 导出 / 工具 ---
+// 选中并展示编辑器
+function selectItem(idx) {
+  gIdx = idx; buildList(); document.body.classList.add('show-editor');
+  const item = (gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts)[idx];
+  el('hint').style.display = 'none'; el('editBox').style.display = 'flex';
+  el('promptFields').style.display = gTab === 'prompts' ? 'flex' : 'none';
+  el('regexFields').style.display = gTab === 'regex' ? 'flex' : 'none';
+  el('settingsFields').style.display = 'none';
+  el('delBtn').style.display = 'inline-block';
+  el('editTitle').textContent = '正在编辑：' + ((gTab==='prompts'?item.name:item.scriptName)||'(未命名)');
+  if (gTab === 'prompts') {
+    el('f-name').value = item.name||''; el('f-enabled').value = item.enabled ? 'true':'false';
+    el('f-role').value = item.role||'system'; el('f-depth').value = item.injection_depth??4;
+    el('f-pos').value = item.injection_position??0; el('f-content').value = item.content||'';
+  } else {
+    el('r-name').value = item.scriptName||''; el('r-enabled').value = item.disabled?'true':'false';
+    el('r-find').value = item.findRegex||''; el('r-replace').value = item.replaceString||'';
+    el('r-placement').value = (item.placement||[]).join(', ');
+    el('r-minDepth').value = item.minDepth!=null?item.minDepth:'';
+    el('r-maxDepth').value = item.maxDepth!=null?item.maxDepth:'';
+    el('r-promptOnly').value = item.promptOnly?'true':'false';
+    el('r-markdownOnly').value = item.markdownOnly?'true':'false';
+    el('r-runOnEdit').value = item.runOnEdit!==false?'true':'false';
+  }
+}
+
+// 批量模式
+function toggleBatchMode() { gBatchMode=!gBatchMode; el('listWrap').classList.toggle('batch-mode',gBatchMode); if(!gBatchMode)gSelectedIndices.clear(); buildList(); }
+function exitBatchMode() { if(!gBatchMode)return; gBatchMode=false; el('listWrap').classList.remove('batch-mode'); gSelectedIndices.clear(); buildList(); }
+function selectAllInList() {
+  const arr = gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts;
+  if (gSelectedIndices.size===arr.length) gSelectedIndices.clear();
+  else arr.forEach((_,i)=>gSelectedIndices.add(i));
+  buildList();
+}
+
+// 新增 / 删除
 function addItem() {
   if (!gData) { alert('请先加载 JSON！'); return; }
-  var arr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
-  if (gTab === 'prompts') {
-    arr.unshift({ identifier: uuid(), name: '新建模块 ' + (gData.prompts.length + 1), enabled: true, role: 'system', injection_position: 0, injection_depth: 4, injection_order: -10, content: '' });
-  } else {
-    arr.unshift({ id: uuid(), scriptName: '新建正则 ' + (gData.extensions.regex_scripts.length + 1), disabled: false, findRegex: '', replaceString: '', placement: [1,2] });
-  }
-  gIdx = 0; // 选中第一个
-  buildList();
-  selectItem(gIdx);
+  const arr = gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts;
+  if (gTab==='prompts') arr.unshift({identifier:uuid(),name:'新建模块 '+(arr.length+1),enabled:true,role:'system',content:''});
+  else arr.unshift({id:uuid(),scriptName:'新建正则 '+(arr.length+1),disabled:false,findRegex:'',replaceString:''});
+  gIdx=0; buildList(); selectItem(0);
+}
+function deleteItem() {
+  if (gIdx<0||!confirm('确定删除此项？')) return;
+  (gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts).splice(gIdx,1);
+  gIdx=-1; buildList(); showHint();
 }
 
-function exportJSON() {
-  if (!gData) return;
-  var blob = new Blob([JSON.stringify(gData, null, 4)], { type: 'application/json' });
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
-  a.href   = url;
-  a.download = gFile.replace(/\.json$/i, '_Modified.json');
-  a.click();
-  URL.revokeObjectURL(url);
+// 绑定事件
+window.onload = function() {
+  el('fileInput').addEventListener('change', handleMainFileLoad);
+  el('importInput').addEventListener('change', handleImportFileLoad);
+  document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', function() {
+    if (!gData && this.dataset.tab !== 'settings') { alert('请先加载 JSON 文件！'); return; }
+    activateTab(this.dataset.tab);
+  }));
+  el('exportBtn').onclick = () => exportJSON(false);
+  el('exportSelectedBtn').onclick = () => exportJSON(true);
+  el('addBtn').onclick = addItem;
+  el('delBtn').onclick = deleteItem;
+  el('backBtn').onclick = () => document.body.classList.remove('show-editor');
+  el('batchBtn').onclick = toggleBatchMode;
+  el('doneBatchBtn').onclick = exitBatchMode;
+  el('selectAllBtn').onclick = selectAllInList;
+
+  function bind(id, evt, cb) { const e=el(id); if(e) e.addEventListener(evt, ()=>cb(e.value)); }
+  function set(key, val) { if(gIdx<0||!gData)return; (gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts)[gIdx][key]=val; }
+  function refreshTitle(name) { el('editTitle').textContent='正在编辑：'+(name||'(未命名)'); buildList(); }
+
+  bind('f-name','input',v=>{set('name',v);refreshTitle(v);});
+  bind('f-enabled','change',v=>{set('enabled',v==='true');buildList();});
+  bind('f-role','change',v=>set('role',v));
+  bind('f-depth','input',v=>set('injection_depth',parseInt(v)||0));
+  bind('f-pos','input',v=>set('injection_position',parseInt(v)||0));
+  bind('f-content','input',v=>set('content',v));
+
+  bind('r-name','input',v=>{set('scriptName',v);refreshTitle(v);});
+  bind('r-enabled','change',v=>{set('disabled',v==='true');buildList();});
+  bind('r-find','input',v=>set('findRegex',v));
+  bind('r-replace','input',v=>set('replaceString',v));
+  bind('r-promptOnly','change',v=>set('promptOnly',v==='true'));
+  bind('r-markdownOnly','change',v=>set('markdownOnly',v==='true'));
+  bind('r-runOnEdit','change',v=>set('runOnEdit',v==='true'));
+  bind('r-placement','input',v=>set('placement',v.split(',').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n))));
+  bind('r-minDepth','input',v=>set('minDepth',v===''?null:parseInt(v)));
+  bind('r-maxDepth','input',v=>set('maxDepth',v===''?null:parseInt(v)));
+
+  ['temperature','top_p','top_k','frequency_penalty','presence_penalty','repetition_penalty']
+    .forEach(k=>bind('s-'+k,'input',v=>{if(gData)gData[k]=parseFloat(v);}));
+  ['impersonation_prompt','continue_nudge_prompt','new_chat_prompt','group_nudge_prompt']
+    .forEach(k=>bind('s-'+k,'input',v=>{if(gData)gData[k]=v;}));
+};
+
+function uuid() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    var r = Math.random()*16|0; return (c==='x'?r:(r&0x3|0x8)).toString(16);
+  });
 }
-
-function uuid() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
-function el(id) { return document.getElementById(id); }
-
-// 启动
-wireEvents();
 </script>
 </body>
 </html>
