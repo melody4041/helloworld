@@ -14,7 +14,7 @@
   --accent: #e94560;
   --accent-hover: #ff6e87;
   --green: #4ade80;
-  --red: #c0392b;
+  --red: #ff4757; /* 使用更亮眼的红色 */
   --blue: #3498db;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -70,16 +70,31 @@ body {
 #listWrap.batch-mode #listTopRegular { display: none; }
 #listWrap.batch-mode #batchActions { display: flex; }
 #list { flex: 1; overflow-y: auto; padding: 6px; }
+
+/* 列表项及眼睛开关的样式 */
 .item {
   padding: 8px 10px; margin-bottom: 4px; border-radius: 5px; cursor: pointer;
   border: 1px solid transparent; display: flex; align-items: center; gap: 8px; background: var(--bg-deep);
 }
 .item:hover { background: #1a2a4a; }
 .item.on { border-color: var(--accent); background: #1a2a4a; }
-.item-name { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-on { background: var(--green); }
-.dot-off { background: #555; }
+.item-name { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; }
+.item.is-disabled .item-name { opacity: 0.4; text-decoration: line-through; } /* 禁用时的文本表现 */
+
+/* 隐藏/显示 切换按钮 */
+.vis-btn {
+  position: relative; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; cursor: pointer; border-radius: 4px; user-select: none;
+}
+.vis-btn:hover { background: rgba(255,255,255,0.1); }
+.vis-off { opacity: 0.6; }
+/* 红色的斜线 */
+.vis-off::after {
+  content: ''; position: absolute; width: 18px; height: 2px;
+  background-color: var(--red); transform: rotate(-45deg);
+  box-shadow: 0 0 2px rgba(0,0,0,0.8); /* 加点阴影让斜线更清晰 */
+}
+
 .item-checkbox { display: none; margin-right: 4px; cursor: default; }
 #listWrap.batch-mode .item-checkbox { display: inline-block; }
 .item.dragging { opacity: 0.5; }
@@ -140,7 +155,6 @@ select option { background: var(--bg-deep); }
       <div id="listTopRegular" style="display:flex; gap:6px; flex-wrap:wrap;">
         <button id="addBtn" class="list-btn">＋ 新增</button>
         <button id="batchBtn" class="list-btn">🔄 批量操作</button>
-        <!-- ★ 关键修复：加上 for="importInput" -->
         <label id="importLabel" class="list-btn" for="importInput">📥 导入模块</label>
         <input type="file" id="importInput" accept=".json">
       </div>
@@ -233,7 +247,6 @@ document.getElementById('editor').innerHTML = `
   </div>
 </div>`;
 
-// 加载主文件
 function handleMainFileLoad() {
   var file = this.files[0]; if (!file) return;
   gFile = file.name; el('loadedFile').textContent = file.name;
@@ -251,7 +264,6 @@ function handleMainFileLoad() {
   reader.readAsText(file); this.value = '';
 }
 
-// 导入模块并合并进当前文件
 function handleImportFileLoad() {
   const file = this.files[0]; if (!file) return;
   if (!gData) { alert('请先加载一个主 JSON 文件！'); this.value = ''; return; }
@@ -262,11 +274,17 @@ function handleImportFileLoad() {
       if (!Array.isArray(imported)) throw new Error('文件格式不正确，应为数组。');
       const target = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
       let count = 0;
-      // 倒序插入，保持原始顺序且放在列表最前面
       [...imported].reverse().forEach(item => {
         if (typeof item === 'object' && item !== null) {
-          if (gTab === 'prompts' && !item.identifier) item.identifier = uuid();
-          if (gTab === 'regex' && !item.id) item.id = uuid();
+          // ★ 强制设定导入模块的默认可见状态为：启用
+          if (gTab === 'prompts') {
+            if (!item.identifier) item.identifier = uuid();
+            item.enabled = true; 
+          }
+          if (gTab === 'regex') {
+            if (!item.id) item.id = uuid();
+            item.disabled = false;
+          }
           target.unshift(item);
           count++;
         }
@@ -278,7 +296,6 @@ function handleImportFileLoad() {
   reader.readAsText(file); this.value = '';
 }
 
-// 导出
 function exportJSON(selectedOnly) {
   if (!gData) return;
   let data, name;
@@ -296,7 +313,6 @@ function exportJSON(selectedOnly) {
   a.download = name; a.click();
 }
 
-// 切换 Tab
 function activateTab(tab) {
   exitBatchMode();
   gTab = tab; gIdx = -1;
@@ -332,26 +348,53 @@ function buildList() {
   const box = el('list'); box.innerHTML = ''; if (!gData) return;
   const arr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
   arr.forEach((itemData, idx) => {
+    // 判断当前状态：Prompts true为启用，Regex false为启用
+    const isOn = gTab === 'prompts' ? !!itemData.enabled : !itemData.disabled;
+    
     const div = document.createElement('div');
     div.className = 'item' + (idx === gIdx ? ' on' : '');
+    if (!isOn) div.classList.add('is-disabled'); // 如果未启用，添加禁用样式
     div.draggable = !gBatchMode;
 
+    // 多选框
     const cb = document.createElement('input');
     cb.type = 'checkbox'; cb.className = 'item-checkbox'; cb.checked = gSelectedIndices.has(idx);
     cb.onclick = e => e.stopPropagation();
     cb.onchange = () => { gSelectedIndices.has(idx) ? gSelectedIndices.delete(idx) : gSelectedIndices.add(idx); };
     div.appendChild(cb);
 
-    const isOn = gTab === 'prompts' ? !!itemData.enabled : !itemData.disabled;
+    // 名字
     const nm = (gTab === 'prompts' ? itemData.name : itemData.scriptName) || '(未命名)';
-    const dot = document.createElement('span'); dot.className = 'dot ' + (isOn ? 'dot-on' : 'dot-off');
-    const nameSpan = document.createElement('span'); nameSpan.className = 'item-name'; nameSpan.title = nm; nameSpan.textContent = nm;
-    div.appendChild(dot); div.appendChild(nameSpan);
+    const nameSpan = document.createElement('span'); 
+    nameSpan.className = 'item-name'; nameSpan.title = nm; nameSpan.textContent = nm;
+    div.appendChild(nameSpan);
 
+    // ★ 隐藏/启用切换按钮（眼睛图标）
+    const visBtn = document.createElement('div');
+    visBtn.className = 'vis-btn ' + (isOn ? 'vis-on' : 'vis-off');
+    visBtn.textContent = '👁️';
+    visBtn.title = isOn ? '已启用（点击禁用）' : '已禁用（点击启用）';
+    visBtn.onclick = (e) => {
+      e.stopPropagation(); // 阻止点击事件冒泡（不触发选中模块）
+      // 切换状态并更新数据
+      if (gTab === 'prompts') {
+        itemData.enabled = !itemData.enabled;
+      } else {
+        itemData.disabled = !itemData.disabled;
+      }
+      buildList(); // 重新渲染列表
+      // 如果改变的正是当前正在编辑的模块，连带更新右侧编辑区的下拉框
+      if (gIdx === idx) selectItem(gIdx); 
+    };
+    div.appendChild(visBtn);
+
+    // 点击整个条目（选中逻辑）
     div.onclick = () => {
       if (gBatchMode) { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); }
       else selectItem(idx);
     };
+
+    // 拖拽逻辑
     div.addEventListener('dragstart', e => { if(gBatchMode) return e.preventDefault(); gDraggedIdx=idx; div.classList.add('dragging'); });
     div.addEventListener('dragend', () => div.classList.remove('dragging'));
     div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('drag-over'); });
@@ -367,22 +410,30 @@ function buildList() {
   });
 }
 
-// 选中并展示编辑器
 function selectItem(idx) {
-  gIdx = idx; buildList(); document.body.classList.add('show-editor');
-  const item = (gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts)[idx];
+  gIdx = idx; document.body.classList.add('show-editor');
+  // 必须重新获取一遍数据，防止渲染时取错
+  const arr = gTab === 'prompts' ? gData.prompts : gData.extensions.regex_scripts;
+  // 增加安全判定
+  if (!arr || idx < 0 || idx >= arr.length) return; 
+  const item = arr[idx];
+  
   el('hint').style.display = 'none'; el('editBox').style.display = 'flex';
   el('promptFields').style.display = gTab === 'prompts' ? 'flex' : 'none';
   el('regexFields').style.display = gTab === 'regex' ? 'flex' : 'none';
   el('settingsFields').style.display = 'none';
   el('delBtn').style.display = 'inline-block';
   el('editTitle').textContent = '正在编辑：' + ((gTab==='prompts'?item.name:item.scriptName)||'(未命名)');
+  
+  // 绑定编辑区的值
   if (gTab === 'prompts') {
-    el('f-name').value = item.name||''; el('f-enabled').value = item.enabled ? 'true':'false';
+    el('f-name').value = item.name||''; 
+    el('f-enabled').value = item.enabled ? 'true':'false'; // 更新右侧是否启用下拉框
     el('f-role').value = item.role||'system'; el('f-depth').value = item.injection_depth??4;
     el('f-pos').value = item.injection_position??0; el('f-content').value = item.content||'';
   } else {
-    el('r-name').value = item.scriptName||''; el('r-enabled').value = item.disabled?'true':'false';
+    el('r-name').value = item.scriptName||''; 
+    el('r-enabled').value = item.disabled ? 'true':'false'; // 更新右侧是否启用下拉框
     el('r-find').value = item.findRegex||''; el('r-replace').value = item.replaceString||'';
     el('r-placement').value = (item.placement||[]).join(', ');
     el('r-minDepth').value = item.minDepth!=null?item.minDepth:'';
@@ -393,7 +444,6 @@ function selectItem(idx) {
   }
 }
 
-// 批量模式
 function toggleBatchMode() { gBatchMode=!gBatchMode; el('listWrap').classList.toggle('batch-mode',gBatchMode); if(!gBatchMode)gSelectedIndices.clear(); buildList(); }
 function exitBatchMode() { if(!gBatchMode)return; gBatchMode=false; el('listWrap').classList.remove('batch-mode'); gSelectedIndices.clear(); buildList(); }
 function selectAllInList() {
@@ -403,21 +453,21 @@ function selectAllInList() {
   buildList();
 }
 
-// 新增 / 删除
 function addItem() {
   if (!gData) { alert('请先加载 JSON！'); return; }
   const arr = gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts;
+  // ★ 强制设定新增模块的默认可见状态为：启用 (enabled: true / disabled: false)
   if (gTab==='prompts') arr.unshift({identifier:uuid(),name:'新建模块 '+(arr.length+1),enabled:true,role:'system',content:''});
   else arr.unshift({id:uuid(),scriptName:'新建正则 '+(arr.length+1),disabled:false,findRegex:'',replaceString:''});
   gIdx=0; buildList(); selectItem(0);
 }
+
 function deleteItem() {
   if (gIdx<0||!confirm('确定删除此项？')) return;
   (gTab==='prompts'?gData.prompts:gData.extensions.regex_scripts).splice(gIdx,1);
   gIdx=-1; buildList(); showHint();
 }
 
-// 绑定事件
 window.onload = function() {
   el('fileInput').addEventListener('change', handleMainFileLoad);
   el('importInput').addEventListener('change', handleImportFileLoad);
@@ -439,14 +489,14 @@ window.onload = function() {
   function refreshTitle(name) { el('editTitle').textContent='正在编辑：'+(name||'(未命名)'); buildList(); }
 
   bind('f-name','input',v=>{set('name',v);refreshTitle(v);});
-  bind('f-enabled','change',v=>{set('enabled',v==='true');buildList();});
+  bind('f-enabled','change',v=>{set('enabled',v==='true');buildList();}); // 编辑区改变也会刷新列表眼睛状态
   bind('f-role','change',v=>set('role',v));
   bind('f-depth','input',v=>set('injection_depth',parseInt(v)||0));
   bind('f-pos','input',v=>set('injection_position',parseInt(v)||0));
   bind('f-content','input',v=>set('content',v));
 
   bind('r-name','input',v=>{set('scriptName',v);refreshTitle(v);});
-  bind('r-enabled','change',v=>{set('disabled',v==='true');buildList();});
+  bind('r-enabled','change',v=>{set('disabled',v==='true');buildList();}); // 编辑区改变也会刷新列表眼睛状态
   bind('r-find','input',v=>set('findRegex',v));
   bind('r-replace','input',v=>set('replaceString',v));
   bind('r-promptOnly','change',v=>set('promptOnly',v==='true'));
