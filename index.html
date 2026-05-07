@@ -159,7 +159,17 @@ body {
 }
 .item:hover { background: var(--bg-hover); }
 .item.on { border-color: var(--accent); background: var(--bg-hover); }
-.item-name { flex: 1; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: 0.2s; }
+
+/* ==== 修复名字被挤没的核心代码 ==== */
+.item-name { 
+  flex: 1; 
+  min-width: 0; /* 极其重要：防止长文本撑爆容器 */
+  font-size: 13px; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  transition: 0.2s; 
+}
 
 /* 禁用状态（通过开关控制） */
 .item.is-disabled .item-name { color: var(--text-light); text-decoration: line-through; } 
@@ -187,34 +197,39 @@ body {
   transition: background-color 0.3s;
 }
 .switch-btn.is-on {
-  background-color: var(--green); /* 启用时变绿 */
+  background-color: var(--green);
 }
 .switch-btn::after {
   content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 14px;
-  height: 14px;
-  background-color: white;
-  border-radius: 50%;
-  transition: transform 0.3s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  position: absolute; top: 2px; left: 2px; width: 14px; height: 14px;
+  background-color: white; border-radius: 50%; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 .switch-btn.is-on::after {
-  transform: translateX(14px); /* 滑动动画 */
+  transform: translateX(14px);
 }
 
 /* 眼睛被禁用时的红线样式 */
 .icon-eye.is-off { opacity: 0.4; }
 .icon-eye.is-off::after {
   content: ''; position: absolute; width: 18px; height: 2px;
-  background-color: var(--red); transform: rotate(-45deg);
-  box-shadow: 0 0 2px rgba(0,0,0,0.8);
+  background-color: var(--red); transform: rotate(-45deg); box-shadow: 0 0 2px rgba(0,0,0,0.8);
 }
 
-.item-checkbox { display: none; margin-right: 4px; cursor: default; }
-#listWrap.batch-mode .item-checkbox { display: inline-block; }
+/* ==== 修复复选框膨胀的核心代码 ==== */
+.item-checkbox { 
+  display: none; 
+  width: 16px !important; /* 强制覆盖下方 input 的 100% 宽度 */
+  height: 16px !important; 
+  margin: 0 !important;
+  padding: 0 !important;
+  flex-shrink: 0; /* 严禁复选框被压缩 */
+  cursor: pointer; 
+}
+/* 批量模式下显示复选框，固定在左侧 */
+#listWrap.batch-mode .item-checkbox { display: block; }
+/* 批量模式下隐藏右侧按钮 */
+#listWrap.batch-mode .item-actions { display: none; }
+
 .item.dragging { opacity: 0.5; }
 .item.drag-over { border-top: 2px solid var(--accent); }
 #editor { flex: 1; overflow-y: auto; padding: 0; background: var(--bg-main); }
@@ -232,6 +247,8 @@ body {
 .field-group > label { font-size: 11px; font-weight: bold; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; }
 .field-row { display: flex; gap: 12px; }
 .field-row .field-group { flex: 1; }
+
+/* 这里的 input 会导致复选框膨胀，现已通过上方 !important 修复 */
 input, select, textarea { width: 100%; background: var(--bg-deep); border: 1px solid var(--border-color); color: var(--text-main); border-radius: 5px; padding: 8px 10px; font-size: 13px; font-family: inherit; }
 input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
 textarea { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.6; resize: vertical; min-height: 180px; }
@@ -259,7 +276,6 @@ select option { background: var(--bg-deep); color: var(--text-main); }
   <input type="file" id="fileInput" accept=".json">
   <button id="exportBtn" class="top-btn" disabled>💾 导出 JSON</button>
   
-  <!-- 主题切换下拉菜单 -->
   <select id="themeSelect" title="切换主题">
     <option value="dark">🌙 暗夜蓝 (Dark)</option>
     <option value="light">☀️ 极简白 (Light)</option>
@@ -291,8 +307,8 @@ select option { background: var(--bg-deep); color: var(--text-main); }
       </div>
       <div id="batchActions">
         <button id="selectAllBtn" class="list-btn">✅ 全选</button>
-        <button id="exportSelectedBtn" class="list-btn" style="background:var(--blue)">📂 导出选中</button>
-        <button id="doneBatchBtn" class="list-btn" style="background:var(--accent)">↩️ 完成</button>
+        <button id="exportSelectedBtn" class="list-btn" style="background:var(--blue); color:#fff">📂 导出选中</button>
+        <button id="doneBatchBtn" class="list-btn" style="background:var(--accent); color:#fff">↩️ 完成</button>
       </div>
     </div>
     <div id="list"></div>
@@ -512,21 +528,21 @@ function buildList() {
     if (isHidden) div.classList.add('is-hidden');
     div.draggable = !gBatchMode;
 
-    // 多选框 (批量模式用)
+    // 多选框 (固定在最左侧)
     const cb = document.createElement('input');
     cb.type = 'checkbox'; cb.className = 'item-checkbox'; cb.checked = gSelectedIndices.has(idx);
     cb.onclick = e => e.stopPropagation();
     cb.onchange = () => { gSelectedIndices.has(idx) ? gSelectedIndices.delete(idx) : gSelectedIndices.add(idx); };
     div.appendChild(cb);
 
-    // 名字展示
+    // 名字展示 (居中自适应)
     const nm = (gTab === 'prompts' ? itemData.name : itemData.scriptName) || '(未命名)';
     const nameSpan = document.createElement('span'); 
     nameSpan.className = 'item-name'; nameSpan.title = nm; nameSpan.textContent = nm;
     div.appendChild(nameSpan);
 
     // ==========================================
-    // 右侧操作按钮
+    // 右侧操作按钮 (固定在最右侧，批量时隐藏)
     // ==========================================
     const actionsBox = document.createElement('div');
     actionsBox.className = 'item-actions';
